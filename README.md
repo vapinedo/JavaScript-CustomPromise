@@ -1,0 +1,2 @@
+# JavaScript Custom Promise Object
+
