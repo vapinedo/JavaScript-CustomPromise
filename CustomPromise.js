@@ -4,54 +4,56 @@ const REJECTED = 2;
 
 function CustomPromise(executor) {
     let state = PENDING;
-    let futureValue = null;
-    let callBacks = []; // callback list
+    let value = null;
+    let handlers = [];
     let catches = [];
 
     function resolve(result) {
         if (state === PENDING) {
             state = FULFILLED;
-            futureValue = result;
-            callBacks.forEach(callBack => callBack(futureValue));
+            value = result;
+            handlers.forEach(handlerFn => handlerFn(value));
         }
         return;
     }
 
     function reject(error) {
-        if (state === PENDING) {
+        if (state = PENDING) {
             state = REJECTED;
-            futureValue = error;
-            catches.forEach(catchFn => catchFn(futureValue));
+            value = error;
+            catches.forEach(catchFn => catchFn(value));
         }
         return;
     }
 
-    this.then = function (callBack) {
+    this.then = function (callback) {
         if (state === FULFILLED) {
-            callBack(futureValue);
+            callback(value);
         } else {
-            callBacks.push(callBack);
+            handlers.push(callback);
         }
-    }
+        // returns a Promise!
+
+    };
 
     executor(resolve, reject);
 }
 
-const executorFn = (resolve, reject) => {
-    setTimeout(() => {
-        resolve('Future Value 1');
-    }, 2000);
-};
-const executorFn2 = (resolve, reject) => {
-    setTimeout(() => {
-        resolve('Future Value 2');
-    }, 4000);
+const doWork1 = (res, rej) => {
+    setTimeout(() => res('Work 1'), 1000);
 };
 
-let promise = new CustomPromise(executorFn);
+const doWork2 = (res, rej) => {
+    setTimeout(() => res('Work 2'), 3000);
+};
 
-promise
-    .then((futureValue) => {
-        console.log('CallBack 1:', futureValue);
-        return executorFn2;
-    })
+// let someText = new CustomPromise(doWork1);
+let someText = new Promise(doWork1);
+
+someText.then(function (value) {
+    console.log(value);
+    return new Promise(doWork2);
+})
+    .then(function (value) {
+        console.log(value);
+    });
